@@ -1,33 +1,38 @@
 import os
+import apirequests
 import cv2
+import json
 import face_recognition
-from matplotlib import pyplot as plt
-from PIL import Image
+#from matplotlib import pyplot as plt
+#from PIL import Image
 import numpy as np
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
 from imutils.video import VideoStream
-import imutils
-import time
-import math
+#import imutils
+from datetime import datetime
+#import math
 import os
-import sys
-from threading import Timer
+#import sys
+#from threading import Timer
 import shutil
 import time
 from pathlib import Path
 
+path = cv2.data.haarcascades
+face_cascade = cv2.CascadeClassifier(path + 'haarcascade_frontalface_default.xml')
+eye_cascade = cv2.CascadeClassifier(path + 'haarcascade_eye.xml')
 #img_path = os.path.join(str(Path(__file__).parent) ,"Recog_Train")
-img_path = os.path.join(str(Path(__file__).parent) ,"Dataset1")
-print(img_path)
+img_path = os.path.join(str(Path(__file__).parent) ,"Dataset_")
+#print(img_path)
 images = []
 class_names = []
 encode_list = []
 encode_list_cl = []
 
 myList = os.listdir(img_path)
-print(myList)
+#print(myList)
 
 for subdir in os.listdir(img_path):
 #subdir = "Unknown"
@@ -54,7 +59,7 @@ def detect_and_predict_mask(frame, faceNet, maskNet,threshold):
 
 	# initialize our list of faces, their corresponding locations,
 	# and the list of predictions from our face mask network
-	faces = []
+	#faces = []
 	locs = []
 	preds = []
 	# loop over the detections
@@ -104,31 +109,41 @@ from os.path import dirname, join
 protoPath = join(dirname(__file__), "deploy.prototxt")
 weightsPath = join(dirname(__file__), "res10_300x300_ssd_iter_140000.caffemodel")
 # load our serialized face detector model from disk
-print("[INFO] loading face detector model...")
+#print("[INFO] loading face detector model...")
 #prototxtPath = "C:\masksdetection-master\masksdetection-master\face_detector\deploy.prototxt.txt"
 #weightsPath = os.path.sep.join([FACE_MODEL_PATH,"res10_300x300_ssd_iter_140000.caffemodel"])
 faceNet = cv2.dnn.readNet(protoPath, weightsPath)
 
 # load the face mask detector model from disk
-print("[INFO] loading face mask detector model...")
+#print("[INFO] loading face mask detector model...")
 maskNet = load_model(MASK_MODEL_PATH)
 
 # initialize the video stream and allow the camera sensor to warm up
 print("[INFO] starting video stream...")
 vs = VideoStream(0).start()
-time.sleep(2.0)
+#time.sleep(2.0)
 
 def find_encodings(images) :
     #for names in images :
         for img in images :
             encodings = face_recognition.face_encodings(img)[0]
             encode_list.append(encodings)
-       
         return encode_list
-    
+
+def markEnterance(name):
+ with open('data.json','w') as f:
+            now = time.time()
+            dtString = str(now)
+            aDict = {"rollno": name, "Time": dtString}
+            jsonString = json.dumps(aDict)
+            f.write(jsonString)
+            f.close()
+ #apirequests.test(jsonString)
+
+
 encodeListKnown = find_encodings(images)
  
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0,cv2.CAP_DSHOW)
 
 while True : 
     success , img = cap.read()
@@ -156,7 +171,7 @@ while True :
         cv2.rectangle(img,(x1,y2-35),(x2,y2),color, cv2.FILLED)
         cv2.putText(img, name, (x1+6 , y2 - 6),cv2.FONT_HERSHEY_COMPLEX,1,(255,255,255),2 )
         cv2.putText(img, label, (x1 , y2+10) , cv2.FONT_HERSHEY_COMPLEX , 1 , (255,0,255) , 2)
-        
+        markEnterance(name)
         cv2.imshow('Project' , img)
         
         key = cv2.waitKey(1) & 0xFF

@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib as plt
-
+#import model
 # Load the face dataset
 data = np.load('portal_data.npz')
 trainX, trainy, testX, testy = data['arr_0'], data['arr_1'], data['arr_2'], data['arr_3']
